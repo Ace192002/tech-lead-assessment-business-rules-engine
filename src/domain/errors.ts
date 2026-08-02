@@ -64,6 +64,13 @@ export class UnknownCustomerError extends DomainError {
 }
 
 /**
+ * Le moteur de règles a rencontré une configuration insoluble : identifiants
+ * dupliqués, règle s'annulant elle-même, annulation d'une règle inexistante, ou
+ * absence de convergence. Une non-convergence n'est jamais masquée.
+ */
+export class RuleEngineError extends DomainError {}
+
+/**
  * Un calcul a été demandé sur une commande référençant un produit absent du
  * catalogue. Aucun montant ne peut être établi pour cette commande.
  */
