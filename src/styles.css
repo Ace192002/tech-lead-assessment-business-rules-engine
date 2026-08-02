@@ -1,0 +1,377 @@
+/* Interface de vérification — CSS classique, sans framework.
+   Sobriété volontaire : hiérarchie nette, contrastes AA, pas d'animation
+   décorative. */
+
+:root {
+  --ink: #1c2733;
+  --ink-soft: #52616e;
+  --line: #d7dde3;
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --accent: #0f5c5a;
+  --accent-soft: #e3efee;
+  --ok-bg: #e2f2e6;
+  --ok-ink: #1d6b32;
+  --warn-bg: #fdf1dc;
+  --warn-ink: #8a5b00;
+  --err-bg: #fbe4e4;
+  --err-ink: #a02121;
+  --muted-bg: #eceff2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.45;
+}
+
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 4rem;
+}
+
+/* ---- Entête ---- */
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0 1rem;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0.3rem 0 0;
+  color: var(--ink-soft);
+  max-width: 60ch;
+}
+
+.issues-toggle {
+  border: 1px solid var(--warn-ink);
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.issues-toggle:hover {
+  filter: brightness(0.97);
+}
+
+/* ---- Onglets ---- */
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--line);
+  margin: 0.75rem 0 1.25rem;
+}
+
+.tab {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.6rem 0.9rem;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+  background: var(--muted-bg);
+}
+
+.tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ---- Cartes et grilles ---- */
+
+.page {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.card-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.02rem;
+}
+
+.card-subtitle {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.7rem 1.25rem;
+  margin: 0;
+}
+
+.summary-item dt {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.summary-item dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+}
+
+/* ---- Contrôles ---- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 240px;
+}
+
+.control label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.control select,
+.control input {
+  font: inherit;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--card);
+  color: var(--ink);
+  max-width: 100%;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* ---- Tableaux ---- */
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+  background: var(--muted-bg);
+  padding: 0.5rem 0.6rem;
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+tbody tr:hover {
+  background: var(--accent-soft);
+}
+
+.num,
+td.num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}
+
+.reason {
+  min-width: 260px;
+}
+
+.row--empty td {
+  color: var(--ink-soft);
+  background: #fafbfc;
+}
+
+.row--detail > td {
+  background: #fafbfc;
+  padding: 0.6rem 0.9rem 0.9rem;
+}
+
+.row--detail:hover,
+.row--detail > td:hover {
+  background: #fafbfc;
+}
+
+.sub-table {
+  font-size: 0.84rem;
+}
+
+/* ---- Badges ---- */
+
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.5rem;
+  border-radius: 99px;
+  margin-left: 0.4rem;
+  white-space: nowrap;
+}
+
+.badge:first-child {
+  margin-left: 0;
+}
+
+.badge--applied {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+
+.badge--skipped {
+  background: var(--muted-bg);
+  color: var(--ink-soft);
+}
+
+.badge--replaced,
+.badge--warning {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.badge--cancelled,
+.badge--error {
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+
+/* ---- Divers ---- */
+
+.error-panel {
+  border-color: var(--err-ink);
+  background: var(--err-bg);
+  color: var(--err-ink);
+}
+
+.error-panel p {
+  margin: 0;
+}
+
+.muted {
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.adjustment-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.link-button {
+  font: inherit;
+  font-size: 0.84rem;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0.1rem 0.2rem;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.link-button:hover {
+  color: var(--ink);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 640px) {
+  .app {
+    padding: 0.75rem 0.75rem 2.5rem;
+  }
+
+  .app-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .controls {
+    gap: 0.9rem;
+  }
+
+  .control {
+    min-width: 100%;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+}
