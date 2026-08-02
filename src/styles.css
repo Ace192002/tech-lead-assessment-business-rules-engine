@@ -117,6 +117,15 @@ body {
   gap: 1.1rem;
 }
 
+/* Un élément de grille conserve par défaut min-width: auto et ne peut donc pas
+   rétrécir sous la largeur min-content de son contenu. Sans cette règle, la
+   largeur naturelle des tableaux remonte jusqu'aux cartes : `overflow-x: auto`
+   sur .table-scroll ne se déclenche jamais et c'est la page entière qui déborde
+   horizontalement en dessous de ~900 px. */
+.page > * {
+  min-width: 0;
+}
+
 .card {
   background: var(--card);
   border: 1px solid var(--line);
@@ -193,8 +202,14 @@ body {
 
 /* ---- Tableaux ---- */
 
+/* `contain: paint` déclare que le débordement du tableau est confiné à ce
+   conteneur. Sans lui, la largeur du tableau continue de gonfler le scrollWidth
+   du document et laisse la page défiler horizontalement vers du vide, alors
+   même que le contenu est déjà clippé ici. Le défilement interne du tableau
+   reste entier : le contenu demeure accessible. */
 .table-scroll {
   overflow-x: auto;
+  contain: paint;
 }
 
 table {
