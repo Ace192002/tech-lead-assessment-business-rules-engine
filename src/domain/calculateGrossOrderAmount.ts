@@ -12,25 +12,13 @@
  */
 
 import type { Order, Product } from './model';
+import { roundToTwoDecimals } from './rounding';
 
 export interface GrossOrderAmountResult {
   /** `null` dès qu'au moins un produit de la commande est inconnu. */
   readonly amount: number | null;
   /** Références manquantes, dédupliquées, dans l'ordre de première apparition. */
   readonly missingProductIds: readonly string[];
-}
-
-/**
- * Arrondi commercial à deux décimales, appliqué aux montants et aux
- * pourcentages exposés.
- *
- * `Number.EPSILON` compense la représentation binaire des flottants : sans lui,
- * `1.005 * 100` vaut `100.49999999999999` et s'arrondirait à `1.00`. Une
- * bibliothèque décimale serait disproportionnée pour ce test, mais les calculs
- * restent en pleine précision et l'arrondi n'intervient qu'à l'exposition.
- */
-export function roundToTwoDecimals(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
 /**

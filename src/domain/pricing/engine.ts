@@ -105,6 +105,9 @@ function runPass<TContext>(
 ): PassResult<TContext> {
   let state = initialState;
   const entries: PassEntry<TContext>[] = [];
+  // Réinitialisé à chaque passage, comme l'état : une règle ne voit que ce qui
+  // a été appliqué avant elle dans le passage courant.
+  const appliedRuleIds = new Set<string>();
 
   for (const rule of orderedRules) {
     const amountBefore = getPricingStateTotal(state);
@@ -124,7 +127,7 @@ function runPass<TContext>(
       continue;
     }
 
-    const evaluation = rule.evaluate(context, state);
+    const evaluation = rule.evaluate(context, state, appliedRuleIds);
 
     if (evaluation.outcome === 'skipped') {
       entries.push({
@@ -158,6 +161,7 @@ function runPass<TContext>(
     }
 
     state = evaluation.state;
+    appliedRuleIds.add(rule.id);
     entries.push({
       rule,
       outcome: 'applied',

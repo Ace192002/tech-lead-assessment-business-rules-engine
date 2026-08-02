@@ -7,6 +7,8 @@
  * impossible toute divergence entre l'affichage et le contenu réel de l'état.
  */
 
+import type { Customer, Order } from '../model';
+
 export interface PricingLine {
   readonly productId: string;
   readonly quantity: number;
@@ -65,7 +67,25 @@ export interface PricingRule<TContext> {
   readonly family: RuleFamily;
   /** Priorité croissante ; à égalité, l'ordre de déclaration est conservé. */
   readonly priority: number;
-  evaluate(context: TContext, state: PricingState): RuleEvaluation;
+  /**
+   * `appliedRuleIds` liste les règles déjà appliquées **dans le passage
+   * courant**. Une règle qui veut en annuler une autre doit pouvoir vérifier
+   * que celle-ci était réellement active : sans cette information, la remise
+   * cumulative annulerait un palier conditionnel qui n'avait jamais été
+   * appliqué, et la trace afficherait « annulée » au lieu de « ignorée ».
+   * Les règles qui n'en ont pas besoin peuvent omettre le paramètre.
+   *
+   * Syntaxe propriété (et non méthode) à dessein : les paramètres de méthode
+   * sont bivariants en TypeScript, ce qui permettrait à une implémentation de
+   * re-déclarer `appliedRuleIds: Set<string>` et de muter l'état interne du
+   * moteur. En propriété, `strictFunctionTypes` rend le paramètre contravariant
+   * et rejette cette re-déclaration à la compilation.
+   */
+  readonly evaluate: (
+    context: TContext,
+    state: PricingState,
+    appliedRuleIds: ReadonlySet<string>,
+  ) => RuleEvaluation;
 }
 
 export interface RuleTraceEntry {
@@ -93,4 +113,39 @@ export interface RuleEngineResult {
   readonly trace: readonly RuleTraceEntry[];
   readonly iterations: number;
   readonly disabledRuleIds: readonly string[];
+}
+
+// --- Contexte et sortie métier de calculateOrderPrice -------------------------
+
+/**
+ * Tout ce dont les règles de l'énoncé ont besoin, et rien de plus : ni
+ * catalogue, ni index — les lignes portent déjà prix unitaire et catégories.
+ */
+export interface PricingContext {
+  readonly order: Order;
+  readonly customer: Customer;
+  readonly isFirstOrderOfMonth: boolean;
+}
+
+export interface PricedOrderLine {
+  readonly productId: string;
+  readonly quantity: number;
+  readonly unitPrice: number;
+  readonly categories: readonly string[];
+  /** Montant brut : `unitPrice × quantity`. */
+  readonly baseAmount: number;
+  /** Montant après remises et taxes propres à la ligne, arrondi. */
+  readonly finalAmount: number;
+}
+
+export interface OrderPricingResult {
+  readonly orderId: string;
+  readonly customerId: string;
+  readonly basePrice: number;
+  readonly finalPrice: number;
+  readonly lines: readonly PricedOrderLine[];
+  /** Montants fixes de commande : livraison express, frais de traitement. */
+  readonly adjustments: readonly OrderAdjustment[];
+  readonly trace: readonly RuleTraceEntry[];
+  readonly iterations: number;
 }

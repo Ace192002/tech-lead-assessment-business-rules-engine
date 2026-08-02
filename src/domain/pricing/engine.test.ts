@@ -309,6 +309,53 @@ describe('monotonie des désactivations', () => {
   });
 });
 
+describe('règles déjà appliquées dans le passage courant', () => {
+  /** Consigne les règles vues par une règle témoin, sans modifier l'état. */
+  function observer(id: string, priority: number, seen: string[][]): PricingRule<TestContext> {
+    return {
+      id,
+      label: id,
+      family: 'cumulative',
+      priority,
+      evaluate: (_context, state, appliedRuleIds) => {
+        seen.push([...appliedRuleIds]);
+        return { outcome: 'applied', state };
+      },
+    };
+  }
+
+  it('expose les règles appliquées avant elle, et elles seules', () => {
+    const seen: string[][] = [];
+
+    run([
+      multiplyLines('appliquee', 10, 0.9),
+      alwaysSkipped('ignoree', 20, 'condition non remplie'),
+      observer('temoin', 30, seen),
+      multiplyLines('posterieure', 40, 0.5),
+    ]);
+
+    // « ignoree » n'a rien appliqué, « posterieure » n'est pas encore passée.
+    expect(seen).toEqual([['appliquee']]);
+  });
+
+  it('repart d\'un ensemble vide à chaque passage', () => {
+    const seen: string[][] = [];
+
+    run([
+      multiplyLines('annulee', 10, 0.9),
+      observer('temoin', 20, seen),
+      multiplyLines('annulatrice', 30, 0.5, [
+        { ruleId: 'annulee', outcome: 'cancelled', reason: 'invalidée' },
+      ]),
+    ]);
+
+    // Passage 1 : « annulee » est active. Passage 2 : elle est désactivée, donc
+    // absente de l'ensemble — sans quoi une règle croirait à tort qu'une règle
+    // annulée a été appliquée.
+    expect(seen).toEqual([['annulee'], []]);
+  });
+});
+
 describe('configurations rejetées', () => {
   it('rejette des identifiants de règles dupliqués', () => {
     expect(() => run([multiplyLines('doublon', 10, 0.9), multiplyLines('doublon', 20, 0.8)])).toThrow(

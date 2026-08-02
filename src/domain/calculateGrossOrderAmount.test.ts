@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculateGrossOrderAmount,
-  collectOrderCategories,
-  roundToTwoDecimals,
-} from './calculateGrossOrderAmount';
+import { calculateGrossOrderAmount, collectOrderCategories } from './calculateGrossOrderAmount';
 import type { Order, Product } from './model';
+import { roundToTwoDecimals } from './rounding';
 
 function makeProduct(id: string, price: number, categories: string[]): Product {
   return { id, name: `Produit ${id}`, price, categories };

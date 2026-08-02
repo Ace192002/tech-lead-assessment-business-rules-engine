@@ -63,6 +63,16 @@ export class UnknownCustomerError extends DomainError {
   }
 }
 
+/** Un calcul a été demandé pour une commande absente du dataset. */
+export class UnknownOrderError extends DomainError {
+  readonly orderId: string;
+
+  constructor(orderId: string) {
+    super(`Commande inconnue : "${orderId}".`);
+    this.orderId = orderId;
+  }
+}
+
 /**
  * Le moteur de règles a rencontré une configuration insoluble : identifiants
  * dupliqués, règle s'annulant elle-même, annulation d'une règle inexistante, ou

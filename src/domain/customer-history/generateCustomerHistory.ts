@@ -7,9 +7,10 @@
  * présentation, aucun `console.log`.
  */
 
-import { calculateGrossOrderAmount, collectOrderCategories, roundToTwoDecimals } from '../calculateGrossOrderAmount';
+import { calculateGrossOrderAmount, collectOrderCategories } from '../calculateGrossOrderAmount';
 import { UnknownCustomerError } from '../errors';
 import type { Order } from '../model';
+import { roundToTwoDecimals } from '../rounding';
 import type { DateWindow } from './periods';
 import {
   WINDOW_LENGTH_IN_MONTHS,
