@@ -28,21 +28,6 @@ export function formatDay(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-/**
- * `--reference-date` : une date seule (`YYYY-MM-DD`) est interprétée comme ce
- * jour en UTC ; un horodatage ISO complet est accepté tel quel.
- * Retourne `null` si la valeur est invalide.
- */
-export function parseReferenceDate(value: string): Date | null {
-  const dayOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
-  const parsed = new Date(dayOnly ? `${value}T00:00:00Z` : value);
-
-  if (!/^\d{4}-\d{2}-\d{2}([T ].+)?$/.test(value) || Number.isNaN(parsed.getTime())) {
-    return null;
-  }
-  return parsed;
-}
-
 /** Bloc final de la sortie humaine : l'état de qualité du dataset, toujours visible. */
 export function printDataIssues(issues: readonly DataIssue[]): void {
   console.log('');

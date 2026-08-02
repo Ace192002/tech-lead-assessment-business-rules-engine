@@ -38,6 +38,15 @@ describe('roundToTwoDecimals', () => {
     expect(roundToTwoDecimals(1.005)).toBe(1.01);
   });
 
+  it('arrondit les négatifs symétriquement aux positifs', () => {
+    // Math.round arrondit les demis vers +∞ : sans correction, -1,005 donnait
+    // -1,00 alors que 1,005 donne 1,01.
+    expect(roundToTwoDecimals(-1.005)).toBe(-1.01);
+    expect(roundToTwoDecimals(-2.675)).toBe(-2.68);
+    expect(roundToTwoDecimals(-12.344)).toBe(-12.34);
+    expect(roundToTwoDecimals(-1.005)).toBe(-roundToTwoDecimals(1.005));
+  });
+
   it('laisse intactes les valeurs déjà arrondies', () => {
     expect(roundToTwoDecimals(0)).toBe(0);
     expect(roundToTwoDecimals(799.99)).toBe(799.99);

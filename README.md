@@ -7,7 +7,7 @@ Ce dépôt contient le rendu complet du test technique :
 - **Question 3** — architecture d'un portail unifié avec SSO (document) ;
 - une **CLI** pour vérifier les Questions 1 et 2 sans interface ;
 - une **interface React** de démonstration ;
-- des **tests automatisés** (192 tests, 6 fichiers).
+- des **tests automatisés** (204 tests, 7 fichiers).
 
 ## Navigation rapide
 
@@ -31,12 +31,14 @@ Les fichiers `data/customers.json`, `data/orders.json` et `data/products.json` s
 ## Installation et vérification rapide
 
 ```bash
-npm install
+npm ci
 npm run typecheck
 npm test
 npm run build
 npm run dev
 ```
+
+`npm ci` installe exactement les versions du `package-lock.json` versionné : c'est ce qui rend l'installation reproductible d'une machine à l'autre. (`npm install` fonctionne aussi, mais peut résoudre des versions différentes.)
 
 `npm run dev` démarre Vite, en général sur `http://localhost:5173` (Vite choisit un autre port si celui-ci est occupé ; l'URL réelle est affichée au démarrage).
 
@@ -62,7 +64,7 @@ Ce que démontre chaque client :
 - **C003** — la commande ORD-2024-080 tombe exactement sur la **borne basse** de la fenêtre : elle est incluse (14 commandes) ;
 - **C005** — la commande ORD-2024-079 référence un produit inconnu (P999) : le rapport est produit, la commande est visible mais **non chiffrable**.
 
-Options : `--reference-date` (date `YYYY-MM-DD` interprétée comme jour UTC, ou horodatage ISO complet ; vide = date maximale du dataset), `--json` (sortie `{ result, dataIssues }`), `--help`.
+Options : `--reference-date` (date `YYYY-MM-DD` interprétée comme jour UTC, ou horodatage ISO avec `Z` ou décalage UTC explicite — `2024-11-15T14:00:00Z`, `2024-11-15T14:00:00+02:00` ; un horodatage sans fuseau est refusé, car il dépendrait du fuseau de la machine ; vide = date maximale du dataset), `--json` (sortie `{ result, dataIssues }`), `--help`.
 
 La sortie `--json` est du JSON pur, même via `npm run` : le fichier `.npmrc` du projet met npm en mode silencieux pour que son bandeau ne pollue pas stdout.
 
@@ -194,9 +196,9 @@ npm test
 npm run build
 ```
 
-État au dernier audit : **6 fichiers de tests, 192 tests, tous verts** ; typecheck et build de production sans erreur.
+État au dernier audit : **7 fichiers de tests, 204 tests, tous verts** ; typecheck et build de production sans erreur.
 
-Contrôles particuliers couverts :
+Contrôles particuliers couverts par les tests automatisés :
 
 - calculs de dates rejoués sous plusieurs fuseaux (UTC+14, UTC−11) avec résultats identiques ;
 - rejet des données structurellement invalides et des identifiants dupliqués ;
@@ -205,9 +207,26 @@ Contrôles particuliers couverts :
 - règles métier : seuils exacts (500, 1000, 50 €, 3 unités, 50 %), exclusivités, taxe maximale, remise unique par ligne ;
 - non-mutation des entrées (commandes, produits, clients, règles, états) ;
 - annulation vérifiée sur fixture synthétique (520 → 468 €, ni 444,60 € ni 520 €) ;
-- sorties CLI : codes de sortie et JSON parsable.
+- arrondi au centime symétrique entre valeurs positives et négatives ;
+- date de référence : jour interprété en UTC, rejet des dates calendaires impossibles (`2024-02-31`, `2023-02-29`) et des horodatages invalides.
 
 Aucun pourcentage de couverture n'est annoncé : aucun rapport de couverture n'est demandé ni généré.
+
+### Vérifications manuelles complémentaires
+
+Les points suivants **ne sont pas couverts par les tests automatisés** : aucun test n'exécute les binaires CLI (les fichiers de tests vivent tous sous `src/`). Ils se vérifient à la main :
+
+```bash
+npm run history -- C001 --json | node -e "JSON.parse(require('fs').readFileSync(0,'utf8')); console.log('JSON valide')"
+npm run pricing -- ORD-2024-021 --json | node -e "JSON.parse(require('fs').readFileSync(0,'utf8')); console.log('JSON valide')"
+
+npm run pricing -- ORD-2024-001              # succès                        → code 0
+npm run pricing -- ORD-INEXISTANTE           # commande absente              → code 1
+npm run history  -- C001 --option-inconnue   # argument invalide             → code 2
+npm run history  -- C001 --reference-date 2024-02-31   # date impossible     → code 2
+```
+
+Codes de sortie : `0` succès, `1` erreur métier ou inattendue, `2` arguments invalides.
 
 ## Structure du dépôt
 

@@ -32,11 +32,16 @@ export const rawCustomerSchema = z.object({
 export const rawProductSchema = z.object({
   id: nonEmptyString,
   name: nonEmptyString,
-  /** P018 stocke `"69.99"` : accepté ici, converti et tracé à la normalisation. */
-  price: z.union([
-    z.number().finite(),
-    z.string().regex(NUMERIC_STRING, 'prix non numérique'),
-  ]),
+  /**
+   * P018 stocke `"69.99"` : la *forme* chaîne est acceptée ici, convertie et
+   * tracée à la normalisation. Un prix négatif, en revanche, n'est pas une
+   * anomalie de contenu rattrapable : il rendrait tous les montants aval faux.
+   * Le refus porte sur les deux formes, après validation de la forme, pour que
+   * le message reste « prix négatif » et non « prix non numérique ».
+   */
+  price: z
+    .union([z.number().finite(), z.string().regex(NUMERIC_STRING, 'prix non numérique')])
+    .refine((value) => Number(value) >= 0, 'prix négatif'),
   categories: z.array(nonEmptyString).min(1),
 });
 

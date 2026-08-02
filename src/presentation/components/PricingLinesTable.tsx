@@ -36,8 +36,10 @@ export function PricingLinesTable({
             </tr>
           </thead>
           <tbody>
-            {lines.map((line) => (
-              <tr key={line.productId}>
+            {/* Le moteur ne fusionne pas deux lignes portant le même produit :
+                l'identifiant seul ne suffit donc pas à distinguer les lignes. */}
+            {lines.map((line, index) => (
+              <tr key={`${line.productId}-${index}`}>
                 <td className="mono">{line.productId}</td>
                 <td className="num">{line.quantity}</td>
                 <td className="num">{formatMoney(line.unitPrice)}</td>

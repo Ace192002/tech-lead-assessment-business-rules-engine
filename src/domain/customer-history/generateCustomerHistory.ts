@@ -78,16 +78,23 @@ function selectCustomerOrders(
 }
 
 /**
- * Moyenne des commandes chiffrables, calculée sur les montants **déjà arrondis**
- * qui figurent dans le rapport : la moyenne affichée est ainsi exactement
- * reproductible à la main à partir des commandes affichées.
+ * Moyenne **exacte** des commandes chiffrables, sommée sur les montants déjà
+ * arrondis qui figurent dans le rapport.
+ *
+ * La division n'est volontairement pas arrondie : elle sert de référence au
+ * seuil d'anomalie, et arrondir ici ferait basculer la décision. Avec deux
+ * commandes de 49,99 € et 150,02 €, la moyenne exacte vaut 100,005 € — les
+ * deux écarts valent alors 50,0125 %, au-delà du seuil. Arrondie à 100,01 €,
+ * elle ramènerait l'écart de la seconde commande à exactement 50,00 % et la
+ * ferait passer sous le seuil strict. L'arrondi n'intervient qu'à l'exposition
+ * de `customerAverageAmount`.
  */
 function computeAverageAmount(amounts: readonly number[]): number | null {
   if (amounts.length === 0) {
     return null;
   }
   const total = amounts.reduce((sum, amount) => sum + amount, 0);
-  return roundToTwoDecimals(total / amounts.length);
+  return total / amounts.length;
 }
 
 function computeAnomaly(
@@ -100,11 +107,13 @@ function computeAnomaly(
     return null;
   }
 
-  const deviationPercent = roundToTwoDecimals(
-    (Math.abs(amount - averageAmount) / averageAmount) * 100,
-  );
+  // Le seuil s'applique à l'écart réel ; seul l'écart *affiché* est arrondi.
+  const rawDeviationPercent = (Math.abs(amount - averageAmount) / averageAmount) * 100;
 
-  return { deviationPercent, isAnomaly: deviationPercent > thresholdPercent };
+  return {
+    deviationPercent: roundToTwoDecimals(rawDeviationPercent),
+    isAnomaly: rawDeviationPercent > thresholdPercent,
+  };
 }
 
 interface PeriodAggregate {
@@ -185,7 +194,8 @@ export function generateCustomerHistory(
     categories: collectOrderCategories(order, productsById),
   }));
 
-  const customerAverageAmount = computeAverageAmount(
+  // Moyenne pleine précision : sert de référence au seuil, jamais affichée telle quelle.
+  const exactAverageAmount = computeAverageAmount(
     resolvedOrders
       .map((resolved) => resolved.amount)
       .filter((amount): amount is number => amount !== null),
@@ -201,7 +211,7 @@ export function generateCustomerHistory(
     anomaly:
       resolved.amount === null
         ? null
-        : computeAnomaly(resolved.amount, customerAverageAmount, anomalyThresholdPercent),
+        : computeAnomaly(resolved.amount, exactAverageAmount, anomalyThresholdPercent),
   }));
 
   const rawPeriods = isRegular ? createIsoWeeklyPeriods(window) : createMonthlyPeriods(window);
@@ -236,7 +246,8 @@ export function generateCustomerHistory(
       averageOrdersPerMonth,
       grouping: isRegular ? 'week' : 'month',
     },
-    customerAverageAmount,
+    customerAverageAmount:
+      exactAverageAmount === null ? null : roundToTwoDecimals(exactAverageAmount),
     periods,
   };
 }

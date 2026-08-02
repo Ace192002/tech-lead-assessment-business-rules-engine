@@ -356,6 +356,28 @@ describe('seuil d\'anomalie', () => {
     expect(allOrders(report)[0]?.anomaly?.deviationPercent).toBe(60);
   });
 
+  it('compare l\'écart réel au seuil, et non l\'écart arrondi à la moyenne arrondie', () => {
+    // Moyenne exacte : (49,99 + 150,02) / 2 = 100,005 €.
+    // Les deux commandes s'en écartent de 50,015 €, soit 50,0125 % : strictement
+    // au-delà de 50 %, les deux sont donc des anomalies.
+    // Régression : en passant par la moyenne arrondie (100,01 €), l'écart de
+    // 150,02 € tombait à exactement 50,00 % et la commande n'était plus signalée.
+    const report = syntheticReport(
+      [
+        syntheticOrder('O1', '2024-06-10T10:00:00Z', [['PA', 1]]),
+        syntheticOrder('O2', '2024-07-10T10:00:00Z', [['PB', 1]]),
+      ],
+      { PA: 49.99, PB: 150.02 },
+    );
+
+    // La moyenne reste exposée arrondie au centime.
+    expect(report.customerAverageAmount).toBe(100.01);
+    expect(allOrders(report).map((order) => order.anomaly)).toEqual([
+      { deviationPercent: 50.01, isAnomaly: true },
+      { deviationPercent: 50.01, isAnomaly: true },
+    ]);
+  });
+
   it('accepte un seuil configurable', () => {
     const orders = [
       syntheticOrder('O1', '2024-06-10T10:00:00Z', [['PA', 1]]),

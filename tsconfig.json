@@ -6,6 +6,14 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
 
+    /* Typage global explicite : sans cette liste, TypeScript embarque tous les
+       paquets présents sous `node_modules/@types`, et la compilation dépend
+       alors de l'arbre de dépendances résolu. `@types/node` est épinglé en
+       devDependency ; `vite/client` reste apporté par la référence
+       triple-slash de `src/vite-env.d.ts`, et les types React par leurs
+       imports explicites. */
+    "types": ["node"],
+
     /* Les JSON sources sont importés statiquement : le même code fonctionne
        sous Vite (navigateur), Vitest et tsx (CLI), sans fs ni fetch. */
     "resolveJsonModule": true,

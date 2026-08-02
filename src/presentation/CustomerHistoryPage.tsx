@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { generateCustomerHistory } from '../domain/customer-history/generateCustomerHistory';
 import type { CustomerHistoryReport } from '../domain/customer-history/types';
 import { DomainError } from '../domain/errors';
+import { parseReferenceDate } from '../domain/referenceDate';
 import type { LoadedData } from '../infrastructure/data/loadData';
 import { ErrorPanel } from './components/ErrorPanel';
 import { PeriodTable } from './components/PeriodTable';
@@ -28,15 +29,17 @@ export function CustomerHistoryPage({ data }: { data: LoadedData }) {
     let referenceDate: Date | undefined;
 
     if (referenceDateInput !== '') {
-      const parsed = new Date(`${referenceDateInput}T00:00:00Z`);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(referenceDateInput) || Number.isNaN(parsed.getTime())) {
+      // Même validation que la CLI : jour interprété en UTC, dates impossibles
+      // (2024-02-31) rejetées au lieu d'être reportées au mois suivant.
+      const parsed = parseReferenceDate(referenceDateInput);
+      if (parsed === null) {
         return {
           kind: 'error',
           title: 'Date de référence invalide',
           message: `"${referenceDateInput}" n'est pas une date valide (format attendu : YYYY-MM-DD).`,
         };
       }
-      referenceDate = parsed; // jour interprété en UTC, sans décalage de fuseau
+      referenceDate = parsed;
     }
 
     try {

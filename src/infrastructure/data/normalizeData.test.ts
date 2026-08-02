@@ -253,6 +253,19 @@ describe('structures réellement invalides', () => {
     );
   });
 
+  it('rejette un prix négatif, en nombre comme en chaîne', () => {
+    // Un prix négatif n'est pas une anomalie rattrapable : il fausserait
+    // silencieusement tous les montants calculés en aval.
+    expect(() => buildDataset(files({ products: [{ ...VALID_PRODUCT, price: -5 }] }))).toThrow(
+      InvalidDataError,
+    );
+    expect(() => buildDataset(files({ products: [{ ...VALID_PRODUCT, price: '-5' }] }))).toThrow(
+      InvalidDataError,
+    );
+    // Le prix nul reste accepté : il est plausible (article offert).
+    expect(() => buildDataset(files({ products: [{ ...VALID_PRODUCT, price: 0 }] }))).not.toThrow();
+  });
+
   it('rejette une date de commande illisible', () => {
     expect(() =>
       buildDataset(files({ orders: [{ ...VALID_ORDER, order_date: '15/06/2024' }] })),

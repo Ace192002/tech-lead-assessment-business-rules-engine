@@ -11,22 +11,17 @@
 
 import { generateCustomerHistory } from '../src/domain/customer-history/generateCustomerHistory';
 import type { CustomerHistoryReport, HistoryPeriod } from '../src/domain/customer-history/types';
+import { parseReferenceDate } from '../src/domain/referenceDate';
 import { loadData } from '../src/infrastructure/data/loadData';
-import {
-  formatDay,
-  formatMoney,
-  formatPercent,
-  parseReferenceDate,
-  printDataIssues,
-  reportError,
-} from './cliUtils';
+import { formatDay, formatMoney, formatPercent, printDataIssues, reportError } from './cliUtils';
 
 const USAGE = `Usage : npm run history -- <customerId> [options]
 
 Options :
   --reference-date <date>  Date de référence (YYYY-MM-DD, interprétée en UTC,
-                           ou horodatage ISO complet). Par défaut : la commande
-                           la plus récente du dataset.
+                           ou horodatage ISO avec Z ou décalage UTC explicite,
+                           ex. 2024-11-15T14:00:00Z ou 2024-11-15T14:00:00+02:00).
+                           Par défaut : la commande la plus récente du dataset.
   --json                   Sortie JSON { result, dataIssues } sur stdout.
   --help                   Affiche cette aide.
 
@@ -73,7 +68,7 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
       if (parsed === null) {
         return {
           kind: 'invalid',
-          message: `Date de référence invalide : "${value}" (attendu YYYY-MM-DD ou ISO complet).`,
+          message: `Date de référence invalide : "${value}" (attendu YYYY-MM-DD, ou horodatage ISO avec Z ou décalage UTC explicite).`,
         };
       }
       referenceDate = parsed;
